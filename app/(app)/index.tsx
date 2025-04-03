@@ -7,6 +7,7 @@ import { useAuth } from '../../context/auth';
 import { DailyTotals, Meal } from '../../types/meal';
 import MacroSummary from '../../components/MacroSummary';
 import MealItem from '../../components/MealItem';
+import { ROUTES } from '@/routes';
 
 export default function HomeScreen() {
   const { signOut } = useAuth();
@@ -79,7 +80,7 @@ export default function HomeScreen() {
 
       <TouchableOpacity 
         style={styles.addButton} 
-        onPress={() => router.push('/(app)/add-meal')}
+        onPress={() => router.push(ROUTES.ADD_MEAL)}
       >
         <Ionicons name="add" size={30} color="white" />
       </TouchableOpacity>
