@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, SafeAreaView } from 'react-native';
-import { router } from 'expo-router';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, SafeAreaView, Modal } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../services/supabase';
 import { useAuth } from '../../context/auth';
@@ -8,6 +8,8 @@ import { DailyTotals, Meal } from '../../types/meal';
 import MacroSummary from '../../components/MacroSummary';
 import MealItem from '../../components/MealItem';
 import { ROUTES } from '@/routes';
+import { Calendar } from 'react-native-calendars';
+import { getFormattedLocalDate } from '@/common/date';
 
 export default function HomeScreen() {
   const { signOut } = useAuth();
@@ -20,11 +22,22 @@ export default function HomeScreen() {
   });
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  
-  const today = new Date().toISOString().split('T')[0];
+  const [selectedDate, setSelectedDate] = useState(getFormattedLocalDate(new Date()));
+  const [calendarVisible, setCalendarVisible] = useState(false);
+  const [markedDates, setMarkedDates] = useState<{[date: string]: {marked: boolean}}>({}); 
 
   useEffect(() => {
-    fetchTodaysMeals();
+    fetchMealDates();
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchMeals();
+      fetchMealDates();
+    }, [selectedDate])
+  );
+  
+  useEffect(() => {
     checkAdminStatus();
   }, []);
 
@@ -47,7 +60,32 @@ export default function HomeScreen() {
     }
   }
 
-  async function fetchTodaysMeals() {
+  async function fetchMealDates() {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('meals')
+        .select('date')
+        .eq('user_id', user.id)
+        .order('date', { ascending: false });
+
+      if (error) throw error;
+
+      const datesWithMeals = data.reduce((acc: {[date: string]: {marked: boolean}}, item) => {
+        acc[item.date] = {marked: true};
+        return acc;
+      }, {});
+      
+      setMarkedDates(datesWithMeals);
+    } catch (error) {
+      console.error('Error fetching meal dates:', error);
+    }
+  }
+
+  async function fetchMeals() {
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -58,7 +96,7 @@ export default function HomeScreen() {
         .from('meals')
         .select('*')
         .eq('user_id', user.id)
-        .eq('date', today)
+        .eq('date', selectedDate)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -81,14 +119,42 @@ export default function HomeScreen() {
     }
   }
 
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    if (date.toDateString() === today.toDateString()) {
+      return "Today";
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return "Yesterday";
+    } else {
+      return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <MacroSummary totals={dailyTotals} />
 
       <View style={styles.mealsContainer}>
-        <Text style={styles.sectionTitle}>Today's Meals</Text>
+        <View style={styles.dateSelector}>
+          <Text style={styles.sectionTitle}>
+            {formatDate(selectedDate)}
+          </Text>
+          <TouchableOpacity 
+            onPress={() => setCalendarVisible(true)}
+            style={styles.calendarButton}
+          >
+            <Ionicons name="calendar-outline" size={24} color="#4CAF50" />
+          </TouchableOpacity>
+        </View>
+
         {meals.length === 0 ? (
-          <Text style={styles.emptyText}>No meals recorded today. Add your first meal!</Text>
+          <Text style={styles.emptyText}>No meals recorded for this date. Add a meal!</Text>
         ) : (
           <FlatList
             data={meals}
@@ -119,6 +185,53 @@ export default function HomeScreen() {
       <TouchableOpacity style={styles.signOutButton} onPress={signOut}>
         <Text style={styles.signOutText}>Sign Out</Text>
       </TouchableOpacity>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={calendarVisible}
+        onRequestClose={() => setCalendarVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.calendarContainer}>
+            <View style={styles.calendarHeader}>
+              <Text style={styles.calendarTitle}>Select Date</Text>
+              <TouchableOpacity onPress={() => setCalendarVisible(false)}>
+                <Ionicons name="close" size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+            
+            <Calendar
+              onDayPress={(day) => {
+                setSelectedDate(day.dateString);
+                setCalendarVisible(false);
+              }}
+              markedDates={{
+                ...markedDates,
+                [selectedDate]: { selected: true, selectedColor: '#4CAF50' }
+              }}
+              theme={{
+                todayTextColor: '#4CAF50',
+                selectedDayBackgroundColor: '#4CAF50',
+                dotColor: '#4CAF50',
+              }}
+            />
+            
+            <View style={styles.calendarFooter}>
+              <TouchableOpacity 
+                style={styles.todayButton} 
+                onPress={() => {
+                  const today = new Date().toISOString().split('T')[0];
+                  setSelectedDate(today);
+                  setCalendarVisible(false);
+                }}
+              >
+                <Text style={styles.todayButtonText}>Today</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -135,10 +248,18 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     padding: 16,
   },
+  dateSelector: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 16,
+  },
+  calendarButton: {
+    padding: 4,
   },
   mealsList: {
     flex: 1,
@@ -187,5 +308,48 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: '600',
     marginLeft: 5,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  calendarContainer: {
+    backgroundColor: 'white',
+    margin: 20,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  calendarHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  calendarTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  calendarFooter: {
+    padding: 16,
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+  },
+  todayButton: {
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  todayButtonText: {
+    color: 'white',
+    fontWeight: '600',
   },
 });
