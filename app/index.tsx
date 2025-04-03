@@ -13,8 +13,7 @@ export default function Index() {
       </View>
     );
   }
-  
-  // Redirect based on authentication state
+
   if (session) {
     return <Redirect href={ROUTES.HOME} />;
   } else {
