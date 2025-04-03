@@ -9,7 +9,7 @@ type MacroSummaryProps = {
 export default function MacroSummary({ totals }: MacroSummaryProps) {
   return (
     <View style={styles.container}>
-      <Text style={styles.todayText}>Today's Macros</Text>
+      <Text style={styles.todayText}>Macros</Text>
       <Text style={styles.caloriesText}>{totals.calories} calories</Text>
       <View style={styles.macroRow}>
         <View style={styles.macroBox}>
