@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { supabase } from '../../services/supabase';
+import { getFormattedLocalDate } from '@/common/date';
 
 export default function AddMealScreen() {
   const [name, setName] = useState('');
@@ -21,7 +22,7 @@ export default function AddMealScreen() {
   const [fat, setFat] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = getFormattedLocalDate(new Date());
 
   async function addMeal() {
     if (!name) {
