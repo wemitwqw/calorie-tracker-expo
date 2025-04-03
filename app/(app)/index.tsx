@@ -19,12 +19,33 @@ export default function HomeScreen() {
     fat: 0
   });
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   
   const today = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
     fetchTodaysMeals();
+    checkAdminStatus();
   }, []);
+
+  async function checkAdminStatus() {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      
+      const { data, error } = await supabase
+        .from('admin_users')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) throw error;
+
+      setIsAdmin(!!data);
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+    }
+  }
 
   async function fetchTodaysMeals() {
     setLoading(true);
@@ -85,6 +106,16 @@ export default function HomeScreen() {
         <Ionicons name="add" size={30} color="white" />
       </TouchableOpacity>
 
+      {isAdmin && (
+        <TouchableOpacity 
+          style={styles.adminButton} 
+          onPress={() => router.push(ROUTES.WHITELIST)}
+        >
+          <Ionicons name="shield-outline" size={20} color="white" />
+          <Text style={styles.adminButtonText}>Admin Panel</Text>
+        </TouchableOpacity>
+      )}
+
       <TouchableOpacity style={styles.signOutButton} onPress={signOut}>
         <Text style={styles.signOutText}>Sign Out</Text>
       </TouchableOpacity>
@@ -140,5 +171,21 @@ const styles = StyleSheet.create({
   signOutText: {
     color: '#f44336',
     fontWeight: '500',
+  },
+  adminButton: {
+    position: 'absolute',
+    bottom: 80,
+    left: 20,
+    backgroundColor: '#4361EE',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  adminButtonText: {
+    color: 'white',
+    fontWeight: '600',
+    marginLeft: 5,
   },
 });

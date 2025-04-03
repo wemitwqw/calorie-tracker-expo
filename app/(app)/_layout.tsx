@@ -28,6 +28,13 @@ export default function AppLayout() {
           presentation: 'modal',
         }}
       />
+      <Stack.Screen
+        name="admin/whitelist"
+        options={{
+          title: 'Account Whitelist',
+          presentation: 'modal',
+        }}
+      />
     </Stack>
   );
 }
