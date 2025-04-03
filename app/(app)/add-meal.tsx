@@ -21,7 +21,6 @@ export default function AddMealScreen() {
   const [fat, setFat] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Get today's date in ISO format (YYYY-MM-DD)
   const today = new Date().toISOString().split('T')[0];
 
   async function addMeal() {
@@ -37,12 +36,10 @@ export default function AddMealScreen() {
 
     setLoading(true);
     try {
-      // Get user ID from session
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) throw new Error('Not authenticated');
 
-      // Insert the meal
       const { error } = await supabase
         .from('meals')
         .insert([
