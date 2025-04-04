@@ -10,9 +10,10 @@ import {
   Alert,
   ScrollView
 } from 'react-native';
+import { useMealStore } from '@/stores/useMealStore';
+import { addMeal } from '@/services/meal.service';
+import { useDateStore } from '@/stores/useDateStore';
 import { router } from 'expo-router';
-import { supabase } from '../../services/supabase';
-import { getFormattedLocalDate } from '@/common/date';
 
 export default function AddMealScreen() {
   const [name, setName] = useState('');
@@ -20,50 +21,48 @@ export default function AddMealScreen() {
   const [protein, setProtein] = useState('');
   const [carbs, setCarbs] = useState('');
   const [fat, setFat] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  const today = getFormattedLocalDate(new Date());
+  const selectedDate = useDateStore(state => state.selectedDate);
 
-  async function addMeal() {
-    if (!name) {
-      Alert.alert('Error', 'Please provide a meal name');
-      return;
+  const loading = useMealStore(state => state.isLoading);
+
+  const validateForm = () => {
+    const fields = [
+      { value: name, message: 'Please provide a meal name' },
+      { value: calories, message: 'Please enter calories' },
+      // { value: protein, message: 'Please enter protein' },
+      // { value: carbs, message: 'Please enter carbs' },
+      // { value: fat, message: 'Please enter fat' }
+    ];
+    
+    for (const field of fields) {
+      if (!field.value) {
+        Alert.alert('Error', field.message);
+        return false;
+      }
     }
+    
+    return true;
+  };
 
-    if (!calories) {
-      Alert.alert('Error', 'Please enter calories');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) throw new Error('Not authenticated');
-
-      const { error } = await supabase
-        .from('meals')
-        .insert([
-          { 
-            user_id: user.id,
+  async function handleAddMeal() {
+    if (validateForm()) {
+      try {
+        addMeal(
+          {
             name,
             calories: parseFloat(calories) || 0,
             protein: parseFloat(protein) || 0,
             carbs: parseFloat(carbs) || 0,
             fat: parseFloat(fat) || 0,
-            date: today,
+            date: selectedDate,
           },
-        ]);
-
-      if (error) throw error;
-      
-      Alert.alert('Success', 'Meal added successfully');
-      router.back();
-    } catch (error: any) {
-      console.error('Error adding meal:', error);
-      Alert.alert('Error', error.message);
-    } finally {
-      setLoading(false);
+        );
+        
+        router.back();
+      } catch (error) {
+        console.error('Error adding meal:', error);
+      }
     }
   }
 
@@ -121,7 +120,7 @@ export default function AddMealScreen() {
 
           <TouchableOpacity 
             style={styles.button} 
-            onPress={addMeal}
+            onPress={handleAddMeal}
             disabled={loading}
           >
             <Text style={styles.buttonText}>

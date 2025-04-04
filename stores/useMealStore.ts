@@ -1,23 +1,5 @@
+import { DailyTotals, Meal } from '@/types/meal';
 import { create } from 'zustand';
-
-export interface Meal {
-    id: string;
-    user_id: string;
-    name: string;
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-    date: string;
-    created_at: string;
-}
-
-interface DailyTotals {
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-}
 
 interface MealState {
     meals: Meal[];

@@ -1,35 +1,38 @@
+import { getFormattedLocalDate } from '@/utils/date';
 import { create } from 'zustand';
 
-interface MarkedDates {
-  [date: string]: {
-    marked: boolean; 
-  };
-}
-
 interface DateState {
-  markedDates: MarkedDates;
-  selectedDate: Date;
+  markedDates: string[];
+  selectedDate: string;
   isLoading: boolean;
 
-  setSelectedDate: (date: Date) => void;
-  setMarkedDates: (dates: MarkedDates) => void;
+  setSelectedDate: (date: string) => void;
+  setMarkedDates: (dates: string[]) => void;
+  addMarkedDate: (date: string) => void;
   setIsLoading: (loading: boolean) => void;
 }
 
 export const useDateStore = create<DateState>((set, get) => ({
-    markedDates: {},
-    selectedDate: new Date(),
-    isLoading: false,
-    
-    setSelectedDate: (date) => {
-      set({ selectedDate: date });
-    },
-    
-    setMarkedDates: (dates) => {
-      set({ markedDates: dates });
-    },
-    
-    setIsLoading: (loading) => {
-      set({ isLoading: loading });
-    },
+  markedDates: [],
+  selectedDate: getFormattedLocalDate(new Date()),
+  isLoading: false,
+  
+  setSelectedDate: (date) => {
+    set({ selectedDate: date });
+  },
+  
+  setMarkedDates: (dates) => {
+    set({ markedDates: dates });
+  },
+
+  addMarkedDate: (date) => {
+    const { markedDates } = get();
+    if (!markedDates.includes(date)) {
+      set({ markedDates: [...markedDates, date] });
+    }
+  },
+  
+  setIsLoading: (loading) => {
+    set({ isLoading: loading });
+  },
 }));
