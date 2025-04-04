@@ -1,20 +1,15 @@
 import { supabase } from '@/services/supabase';
 import { useDateStore } from '@/stores/useDateStore';
-import { useMealStore, Meal } from '../stores/useMealStore';
-import { getFormattedLocalDate } from '@/common/date';
+import { useMealStore } from '../stores/useMealStore';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { Meal } from '@/types/meal';
 
-/**
- * Fetches dates that have meals for the current user
- * and updates the store state
- */
 export const fetchMealDates = async () => {
   const { setMarkedDates, setIsLoading } = useDateStore.getState();
-  
+
   try {
     setIsLoading(true);
-    
-    // const { data: { user } } = await supabase.auth.getUser();
+
     const userId = useAuthStore.getState().session?.user.id;
     if (!userId) return;
 
@@ -25,13 +20,8 @@ export const fetchMealDates = async () => {
       .order('date', { ascending: false });
 
     if (error) throw error;
-
-    const datesWithMeals = data.reduce((acc: {[date: string]: {marked: boolean}}, item) => {
-      acc[item.date] = {marked: true};
-      return acc;
-    }, {});
     
-    setMarkedDates(datesWithMeals);
+    setMarkedDates(data.map(item => item.date));
   } catch (error) {
     console.error('Error fetching meal dates:', error);
   } finally {
@@ -39,18 +29,12 @@ export const fetchMealDates = async () => {
   }
 };
 
-/**
- * Fetches meals for a specific date and updates the store state
- */
-export const fetchMealsForDate = async (selectedDate: Date) => {
+export const fetchMealsForDate = async (selectedDate: string) => {
   const { setMeals, setIsLoading } = useMealStore.getState();
-  
+
   try {
     setIsLoading(true);
-    
-    const formattedDate = getFormattedLocalDate(selectedDate);
-    
-    // const { data: { user } } = await supabase.auth.getUser();
+
     const userId = useAuthStore.getState().session?.user.id;
     if (!userId) return;
 
@@ -58,7 +42,7 @@ export const fetchMealsForDate = async (selectedDate: Date) => {
       .from('meals')
       .select('*')
       .eq('user_id', userId)
-      .eq('date', formattedDate)
+      .eq('date', selectedDate)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -71,47 +55,40 @@ export const fetchMealsForDate = async (selectedDate: Date) => {
   }
 };
 
-/**
- * Adds a new meal to the database and updates the store state
- */
-// export const addMeal = async (meal: Omit<Meal, 'id' | 'user_id' | 'created_at'>) => {
-//   const { addMealToState, setIsLoading } = useMealStore.getState();
+export const addMeal = async (meal: Omit<Meal, 'id' | 'user_id' | 'created_at'>) => {
+  const { addMealToState, setIsLoading } = useMealStore.getState();
+  const { addMarkedDate } = useDateStore.getState();
   
-//   try {
-//     setIsLoading(true);
+  try {
+    setIsLoading(true);
     
-//     const { data: { user } } = await supabase.auth.getUser();
-    
-//     if (!user) return;
+    const userId = useAuthStore.getState().session?.user.id;
+    if (!userId) return;
 
-//     const { data, error } = await supabase
-//       .from('meals')
-//       .insert([
-//         {
-//           ...meal,
-//           user_id: user.id,
-//         }
-//       ])
-//       .select();
+    const { data, error } = await supabase
+      .from('meals')
+      .insert([
+        {
+          ...meal,
+          user_id: userId,
+        }
+      ])
+      .select();
 
-//     if (error) throw error;
+    if (error) throw error;
     
-//     if (data && data.length > 0) {
-//       addMealToState(data[0]);
-//     }
+    if (data && data.length > 0) {
+      addMealToState(data[0]);
+    }
     
-//     // Refresh meal dates to update calendar markers
-//     // await fetchMealDates();
-//   } catch (error) {
-//     console.error('Error adding meal:', error);
-//   } finally {
-//     setIsLoading(false);
-//   }
-// };
+    addMarkedDate(meal.date);
+  } catch (error) {
+    console.error('Error adding meal:', error);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
-/**
- * Updates an existing meal in the database and updates the store state
- */
 // export const updateMeal = async (id: string, updates: Partial<Meal>) => {
 //   const { updateMealInState, setIsLoading } = useMealStore.getState();
   
@@ -133,9 +110,6 @@ export const fetchMealsForDate = async (selectedDate: Date) => {
 //   }
 // };
 
-/**
- * Deletes a meal from the database and updates the store state
- */
 // export const deleteMeal = async (id: string) => {
 //   const { deleteMealFromState, setIsLoading } = useMealStore.getState();
   

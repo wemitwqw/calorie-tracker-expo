@@ -1,146 +1,69 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, SafeAreaView, Modal } from 'react-native';
-import { router, useFocusEffect } from 'expo-router';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, SafeAreaView, Modal, ActivityIndicator } from 'react-native';
+import { router } from 'expo-router';
+import { ROUTES } from '@/routes';
 import { Ionicons } from '@expo/vector-icons';
-import { supabase } from '../../services/supabase';
-import { useAuth } from '../../context/auth';
-import { DailyTotals, Meal } from '../../types/meal';
 import MacroSummary from '../../components/MacroSummary';
 import MealItem from '../../components/MealItem';
-import { ROUTES } from '@/routes';
-import { Calendar } from 'react-native-calendars';
-import { getFormattedLocalDate } from '@/common/date';
+import { useAuthStore } from '@/stores/useAuthStore';
+import { formatDate } from '@/utils/date';
+import CustomCalendar from '@/components/Calendar';
+import { fetchMealDates, fetchMealsForDate } from '@/services/meal.service';
+import { useMealStore } from '@/stores/useMealStore';
+import { useDateStore } from '@/stores/useDateStore';
+// import { checkAdminStatus } from '@/services/user.service';
+
+function useAppLoading() {
+  const mealLoading = useMealStore(state => state.isLoading);
+  const dateLoading = useDateStore(state => state.isLoading);
+  
+  return mealLoading || dateLoading;
+}
 
 export default function HomeScreen() {
-  const { signOut } = useAuth();
-  const [meals, setMeals] = useState<Meal[]>([]);
-  const [dailyTotals, setDailyTotals] = useState<DailyTotals>({
-    calories: 0,
-    protein: 0,
-    carbs: 0,
-    fat: 0
-  });
-  const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(getFormattedLocalDate(new Date()));
+  const signOut = useAuthStore(state => state.signOut);
+  // const isAdmin = useAuthStore(state => state.isAdmin);
+  const meals = useMealStore(state => state.meals);
+  const dailyTotals = useMealStore(state => state.dailyTotals);
+  const selectedDate = useDateStore(state => state.selectedDate);
+
   const [calendarVisible, setCalendarVisible] = useState(false);
-  const [markedDates, setMarkedDates] = useState<{[date: string]: {marked: boolean}}>({}); 
 
   useEffect(() => {
-    fetchMealDates();
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      fetchMeals();
-      fetchMealDates();
-    }, [selectedDate])
-  );
+    fetchMealsForDate(selectedDate);
+  }, [selectedDate]);
   
   useEffect(() => {
-    checkAdminStatus();
+    fetchMealDates();
+    // checkAdminStatus();
   }, []);
 
-  async function checkAdminStatus() {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      
-      const { data, error } = await supabase
-        .from('admin_users')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-
-      if (error) throw error;
-
-      setIsAdmin(!!data);
-    } catch (error) {
-      console.error('Error checking admin status:', error);
-    }
+  const isLoading = useAppLoading();
+  if (isLoading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#4CAF50" />
+      </View>
+    );
   }
-
-  async function fetchMealDates() {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('meals')
-        .select('date')
-        .eq('user_id', user.id)
-        .order('date', { ascending: false });
-
-      if (error) throw error;
-
-      const datesWithMeals = data.reduce((acc: {[date: string]: {marked: boolean}}, item) => {
-        acc[item.date] = {marked: true};
-        return acc;
-      }, {});
-      
-      setMarkedDates(datesWithMeals);
-    } catch (error) {
-      console.error('Error fetching meal dates:', error);
-    }
-  }
-
-  async function fetchMeals() {
-    setLoading(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('meals')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('date', selectedDate)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      
-      setMeals(data || []);
-      
-      const totals = (data || []).reduce((acc, meal) => {
-        acc.calories += meal.calories || 0;
-        acc.protein += meal.protein || 0;
-        acc.carbs += meal.carbs || 0;
-        acc.fat += meal.fat || 0;
-        return acc;
-      }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
-      
-      setDailyTotals(totals);
-    } catch (error) {
-      console.error('Error fetching meals:', error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    
-    if (date.toDateString() === today.toDateString()) {
-      return "Today";
-    } else if (date.toDateString() === yesterday.toDateString()) {
-      return "Yesterday";
-    } else {
-      return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-    }
-  };
 
   return (
     <SafeAreaView style={styles.container}>
+
+      {/* {isAdmin && (
+        <TouchableOpacity 
+          style={styles.adminButton} 
+          onPress={() => router.push(ROUTES.WHITELIST)}
+        >
+          <Ionicons name="shield-outline" size={20} color="white" />
+          <Text style={styles.adminButtonText}>Admin Panel</Text>
+        </TouchableOpacity>
+      )} */}
+
       <MacroSummary totals={dailyTotals} />
 
       <View style={styles.mealsContainer}>
+
         <View style={styles.dateSelector}>
           <Text style={styles.sectionTitle}>
             {formatDate(selectedDate)}
@@ -172,66 +95,14 @@ export default function HomeScreen() {
         <Ionicons name="add" size={30} color="white" />
       </TouchableOpacity>
 
-      {isAdmin && (
-        <TouchableOpacity 
-          style={styles.adminButton} 
-          onPress={() => router.push(ROUTES.WHITELIST)}
-        >
-          <Ionicons name="shield-outline" size={20} color="white" />
-          <Text style={styles.adminButtonText}>Admin Panel</Text>
-        </TouchableOpacity>
-      )}
-
       <TouchableOpacity style={styles.signOutButton} onPress={signOut}>
         <Text style={styles.signOutText}>Sign Out</Text>
       </TouchableOpacity>
 
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={calendarVisible}
-        onRequestClose={() => setCalendarVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.calendarContainer}>
-            <View style={styles.calendarHeader}>
-              <Text style={styles.calendarTitle}>Select Date</Text>
-              <TouchableOpacity onPress={() => setCalendarVisible(false)}>
-                <Ionicons name="close" size={24} color="#666" />
-              </TouchableOpacity>
-            </View>
-            
-            <Calendar
-              onDayPress={(day) => {
-                setSelectedDate(day.dateString);
-                setCalendarVisible(false);
-              }}
-              markedDates={{
-                ...markedDates,
-                [selectedDate]: { selected: true, selectedColor: '#4CAF50' }
-              }}
-              theme={{
-                todayTextColor: '#4CAF50',
-                selectedDayBackgroundColor: '#4CAF50',
-                dotColor: '#4CAF50',
-              }}
-            />
-            
-            <View style={styles.calendarFooter}>
-              <TouchableOpacity 
-                style={styles.todayButton} 
-                onPress={() => {
-                  const today = new Date().toISOString().split('T')[0];
-                  setSelectedDate(today);
-                  setCalendarVisible(false);
-                }}
-              >
-                <Text style={styles.todayButtonText}>Today</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      <CustomCalendar 
+        calendarVisible={calendarVisible} 
+        setCalendarVisible={setCalendarVisible}
+      />
     </SafeAreaView>
   );
 }
@@ -240,6 +111,28 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  adminButton: {
+    position: 'absolute',
+    bottom: 80,
+    left: 20,
+    backgroundColor: '#4361EE',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  adminButtonText: {
+    color: 'white',
+    fontWeight: '600',
+    marginLeft: 5,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
   mealsContainer: {
     flex: 1,
@@ -292,64 +185,5 @@ const styles = StyleSheet.create({
   signOutText: {
     color: '#f44336',
     fontWeight: '500',
-  },
-  adminButton: {
-    position: 'absolute',
-    bottom: 80,
-    left: 20,
-    backgroundColor: '#4361EE',
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    borderRadius: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  adminButtonText: {
-    color: 'white',
-    fontWeight: '600',
-    marginLeft: 5,
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  calendarContainer: {
-    backgroundColor: 'white',
-    margin: 20,
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  calendarHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  calendarTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  calendarFooter: {
-    padding: 16,
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-  },
-  todayButton: {
-    backgroundColor: '#4CAF50',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  todayButtonText: {
-    color: 'white',
-    fontWeight: '600',
   },
 });

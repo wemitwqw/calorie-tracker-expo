@@ -5,32 +5,34 @@ import { supabase } from '../services/supabase';
 
 interface AuthState {
   session: Session | null;
+  // isAdmin: boolean;
   isLoading: boolean;
-  initialize: () => Promise<void> | undefined;
+
+  initialize: () => void;
+  // setIsAdmin: (isAdmin: boolean) => void;
   signOut: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   session: null,
+  // isAdmin: false,
   isLoading: true,
-  
-  initialize: async () => {
-    try {
-      const { data } = await supabase.auth.getSession();
+
+  initialize: () => {
+    supabase.auth.getSession().then(({ data }) => {
       set({ session: data.session, isLoading: false });
-      
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        (_event, session) => {
-          set({ session });
-        }
-      );
-      
-      return () => subscription.unsubscribe();
-    } catch (error) {
-      console.error('Error initializing auth:', error);
-      set({ isLoading: false });
-    }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        set({ session });
+      }
+    );
   },
+
+  // setIsAdmin: (isAdmin) => {
+  //   set({ isAdmin: isAdmin });
+  // },
   
   signOut: async () => {
     try {

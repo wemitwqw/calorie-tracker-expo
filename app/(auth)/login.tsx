@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, Platform, ActivityIndicator } from 'react-native';
 import { supabase } from '../../services/supabase';
-import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
@@ -12,21 +11,16 @@ if (Platform.OS !== 'web') {
 }
 
 export default function LoginScreen() {
-  const [loading, setLoading] = useState(false);
-  const [initialized, setInitialized] = useState(false);
-  const redirectUri = Linking.createURL('auth/callback');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const redirectUri = Linking.createURL(ROUTES.CALLBACK);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        router.replace(ROUTES.HOME);
-      }
-      setInitialized(true);
-    });
+    setIsInitialized(true);
   }, []);
 
   async function signInWithGoogleWeb() {
-    setLoading(true);
+    setIsLoading(true);
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -39,12 +33,12 @@ export default function LoginScreen() {
     } catch (error: any) {
       console.error('Error signing in with Google:', error);
       Alert.alert('Error', error.message || 'Failed to sign in with Google');
-      setLoading(false);
+      setIsLoading(false);
     }
   }
 
   async function signInWithGoogleMobile() {
-    setLoading(true);
+    setIsLoading(true);
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -71,12 +65,12 @@ export default function LoginScreen() {
           if (sessionError) throw sessionError;
         }
       } else if (result.type === 'cancel') {
-        setLoading(false);
+        setIsLoading(false);
       }
     } catch (error: any) {
       console.error('Error in OAuth flow:', error);
       Alert.alert('Error', error.message || 'Authentication failed');
-      setLoading(false);
+      setIsLoading(false);
     }
   }
 
@@ -88,7 +82,7 @@ export default function LoginScreen() {
     }
   }
 
-  if (!initialized) {
+  if (!isInitialized || isLoading) {
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" color="#4285F4" />
@@ -108,20 +102,14 @@ export default function LoginScreen() {
         <TouchableOpacity 
           style={styles.googleButton} 
           onPress={handleGoogleSignIn}
-          disabled={loading}
+          disabled={isLoading}
         >
           <Ionicons name="logo-google" size={24} color="white" style={styles.buttonIcon} />
           <Text style={styles.buttonText}>
-            {loading ? 'Signing in...' : 'Continue with Google'}
+            {isLoading ? 'Signing in...' : 'Continue with Google'}
           </Text>
         </TouchableOpacity>
       </View>
-      
-      {/* <View style={styles.footer}>
-        <Text style={styles.footerText}>
-          By signing in, you agree to our Terms of Service and Privacy Policy
-        </Text>
-      </View> */}
     </View>
   );
 }
@@ -174,13 +162,5 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
-  },
-  footer: {
-    marginBottom: 24,
-  },
-  footerText: {
-    fontSize: 12,
-    color: '#999',
-    textAlign: 'center',
   },
 });

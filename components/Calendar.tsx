@@ -1,15 +1,35 @@
+import { constants } from '@/constants';
+import { useDateStore } from '@/stores/useDateStore';
+import { getFormattedLocalDate } from '@/utils/date';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react'
 import { Modal, TouchableOpacity, View, Text, StyleSheet } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 
-export default function CustomCalendar({
-  calendarVisible, 
-  setCalendarVisible, 
-  selectedDate, 
-  setSelectedDate,
-  markedDates,
-}) {
+interface CustomCalendarProps {
+  calendarVisible: boolean;
+  setCalendarVisible: (visible: boolean) => void;
+}
+
+interface MarkedDateProps {
+  marked?: boolean;
+  selected?: boolean;
+  selectedColor?: string;
+  dotColor?: string;
+}
+
+type MarkedDates = {
+  [date: string]: MarkedDateProps;
+};
+
+export default function CustomCalendar({calendarVisible, setCalendarVisible}: CustomCalendarProps) {
+  const { selectedDate, setSelectedDate, markedDates } = useDateStore.getState();
+  
+  const formattedMarkedDates: MarkedDates = markedDates.reduce((acc, date) => {
+    acc[date] = { marked: true, dotColor: constants.markedDateDotColor };
+    return acc;
+  }, {} as MarkedDates);
+
   return (
     <Modal
       animationType="slide"
@@ -27,12 +47,12 @@ export default function CustomCalendar({
         </View>
         
         <Calendar
-          onDayPress={(day) => {
+          onDayPress={(day: { dateString: string; }) => {
           setSelectedDate(day.dateString);
           setCalendarVisible(false);
           }}
           markedDates={{
-          ...markedDates,
+          ...formattedMarkedDates,
           [selectedDate]: { selected: true, selectedColor: '#4CAF50' }
           }}
           theme={{
@@ -46,8 +66,7 @@ export default function CustomCalendar({
           <TouchableOpacity 
             style={styles.todayButton} 
             onPress={() => {
-              const today = new Date().toISOString().split('T')[0];
-              setSelectedDate(today);
+              setSelectedDate(getFormattedLocalDate(new Date()));
               setCalendarVisible(false);
             }}
           >
