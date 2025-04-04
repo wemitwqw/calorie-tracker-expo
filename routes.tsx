@@ -4,4 +4,5 @@ export const ROUTES = {
     HOME: '/(app)',
     ADD_MEAL: '/(app)/add-meal',
     WHITELIST: '/(app)/admin/whitelist',
+    CALLBACK: '/callback',
 } as any;

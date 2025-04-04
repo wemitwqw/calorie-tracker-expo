@@ -1,11 +1,11 @@
 import { Stack } from 'expo-router';
-import { useAuth } from '../../context/auth';
+import { useAuthStore } from '../../stores/useAuthStore';
 import { useEffect } from 'react';
 import { router } from 'expo-router';
 import { ROUTES } from '@/routes';
 
 export default function AppLayout() {
-  const { session } = useAuth();
+  const session = useAuthStore(state => state.session);
 
   useEffect(() => {
     if (!session) {

@@ -1,10 +1,17 @@
 import { Slot } from 'expo-router';
-import AuthContextProvider from '../context/auth';
+import { useEffect } from 'react';
+import { useAuthStore } from '../stores/useAuthStore';
 
 export default function RootLayout() {
-  return (
-    <AuthContextProvider>
-      <Slot />
-    </AuthContextProvider>
-  );
+  const initialize = useAuthStore(state => state.initialize);
+  
+  useEffect(() => {
+    const unsubscribe = initialize();
+
+    return () => {
+      unsubscribe.then(unsub => unsub && unsub());
+    };
+  }, [initialize]);
+
+  return <Slot />;
 }
