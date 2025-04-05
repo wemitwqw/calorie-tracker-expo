@@ -4,7 +4,7 @@ import { supabase } from '../../services/supabase';
 import { Ionicons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
-import { ROUTES } from '@/routes';
+import { ROUTES } from '@/constants';
 
 if (Platform.OS !== 'web') {
   WebBrowser.maybeCompleteAuthSession();

@@ -5,26 +5,64 @@ import { supabase } from '../services/supabase';
 
 interface AuthState {
   session: Session | null;
+  isAdmin: boolean;
   isLoading: boolean;
 
   initialize: () => void;
   signOut: () => Promise<void>;
+  checkIsAdmin: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   session: null,
+  isAdmin: false,
   isLoading: true,
 
-  initialize: () => {
-    supabase.auth.getSession().then(({ data }) => {
+  initialize: async () => {
+    try {
+      const { data } = await supabase.auth.getSession();
       set({ session: data.session, isLoading: false });
-    });
+      
+      // if (data.session) {
+      //   get().checkIsAdmin();
+      // }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        set({ session });
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        async (_event, session) => {
+          set({ session });
+          
+          if (session) {
+            get().checkIsAdmin();
+          } else {
+            set({ isAdmin: false });
+          }
+        }
+      );
+    } catch (error) {
+      console.error('Error initializing auth:', error);
+      set({ isLoading: false });
+    }
+  },
+
+  checkIsAdmin: async () => {
+    try {
+      const session = get().session;
+      if (!session) {
+        set({ isAdmin: false });
+        return;
       }
-    );
+
+      const { data, error } = await supabase.rpc('is_admin', {
+        user_id: session.user.id
+      });
+      
+      if (error) throw error;
+
+      set({ isAdmin: data });
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+      set({ isAdmin: false });
+    }
   },
   
   signOut: async () => {
