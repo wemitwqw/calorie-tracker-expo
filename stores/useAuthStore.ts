@@ -32,12 +32,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           set({ session });
           
           if (session) {
-            get().checkIsAdmin();
+            await get().checkIsAdmin();
           } else {
             set({ isAdmin: false });
           }
         }
       );
+
+      return { session: data.session };
     } catch (error) {
       console.error('Error initializing auth:', error);
       set({ isLoading: false });
