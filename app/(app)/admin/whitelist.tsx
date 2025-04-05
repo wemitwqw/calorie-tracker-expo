@@ -11,9 +11,9 @@ import {
   KeyboardAvoidingView,
   Platform
 } from 'react-native';
-import { router } from 'expo-router';
 import { supabase } from '../../../services/supabase';
 import { Ionicons } from '@expo/vector-icons';
+import { useAdminProtection } from '@/hooks/useAdminProtection';
 
 type WhitelistEntry = {
   email: string;
@@ -26,48 +26,14 @@ export default function WhitelistScreen() {
   const [emails, setEmails] = useState<WhitelistEntry[]>([]);
   const [newEmail, setNewEmail] = useState('');
   const [notes, setNotes] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [addingEmail, setAddingEmail] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    checkAdminStatus();
-  }, []);
+  const { isLoading, session } = useAdminProtection();
 
-  async function checkAdminStatus() {
-    setLoading(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setIsAdmin(false);
-        setLoading(false);
-        return;
-      }
-      
-      const { data, error } = await supabase
-        .from('admin_users')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-        
-      setIsAdmin(!!data);
-      
-      if (data) {
-        fetchEmails();
-      } else {
-        Alert.alert(
-          'Access Denied', 
-          'You do not have admin privileges to access this page.',
-          [{ text: 'Go Back', onPress: () => router.back() }]
-        );
-      }
-    } catch (error) {
-      console.error('Error checking admin status:', error);
-    } finally {
-      setLoading(false);
-    }
-  }
+  useEffect(() => {
+    fetchEmails();
+  }, []);
 
   async function fetchEmails() {
     setRefreshing(true);
@@ -120,56 +86,24 @@ export default function WhitelistScreen() {
   }
 
   async function removeEmail(email: string) {
-    Alert.alert(
-      'Confirm Removal',
-      `Are you sure you want to remove ${email} from the whitelist?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Remove', 
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              const { error } = await supabase
-                .from('allowed_emails')
-                .delete()
-                .eq('email', email);
-                
-              if (error) throw error;
-              
-              fetchEmails();
-              Alert.alert('Success', 'Email removed from whitelist');
-            } catch (error: any) {
-              console.error('Error removing email:', error);
-              Alert.alert('Error', error.message || 'Failed to remove email');
-            }
-          }
-        }
-      ]
-    );
+    try {
+      const { error } = await supabase
+        .from('allowed_emails')
+        .delete()
+        .eq('email', email);
+        
+      if (error) throw error;
+      
+      fetchEmails();
+    } catch (error: any) {
+      console.error('Error removing email:', error);
+    }
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" color="#4CAF50" />
-      </View>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <View style={styles.centered}>
-        <Text style={styles.accessDenied}>Access Denied</Text>
-        <Text style={styles.accessDeniedDetails}>
-          You do not have permission to view this page.
-        </Text>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <Text style={styles.backButtonText}>Go Back</Text>
-        </TouchableOpacity>
       </View>
     );
   }
@@ -180,6 +114,9 @@ export default function WhitelistScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.header}>
+        <Text style={styles.title}>
+          Welcome, {session?.user?.email}
+        </Text>
         <Text style={styles.title}>Whitelisted Emails</Text>
         <TouchableOpacity 
           style={styles.refreshButton}
