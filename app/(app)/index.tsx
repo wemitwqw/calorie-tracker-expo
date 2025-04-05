@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, SafeAreaView, Modal, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Modal, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { ROUTES } from '@/routes';
 import { Ionicons } from '@expo/vector-icons';
-import MacroSummary from '../../components/MacroSummary';
-import MealItem from '../../components/MealItem';
+import MacroSummary from '@/components/MacroSummary';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { formatDate } from '@/utils/date';
 import CustomCalendar from '@/components/Calendar';
 import { fetchMealDates, fetchMealsForDate } from '@/services/meal.service';
 import { useMealStore } from '@/stores/useMealStore';
 import { useDateStore } from '@/stores/useDateStore';
-// import { checkAdminStatus } from '@/services/user.service';
+import MealList from '@/components/MealList';
+import { checkAdminStatus } from '@/services/user.service';
 
 function useAppLoading() {
   const mealLoading = useMealStore(state => state.isLoading);
@@ -22,10 +22,8 @@ function useAppLoading() {
 
 export default function HomeScreen() {
   const signOut = useAuthStore(state => state.signOut);
-  // const isAdmin = useAuthStore(state => state.isAdmin);
-  const meals = useMealStore(state => state.meals);
-  const dailyTotals = useMealStore(state => state.dailyTotals);
   const selectedDate = useDateStore(state => state.selectedDate);
+  const meals = useMealStore(state => state.meals);
 
   const [calendarVisible, setCalendarVisible] = useState(false);
 
@@ -35,7 +33,7 @@ export default function HomeScreen() {
   
   useEffect(() => {
     fetchMealDates();
-    // checkAdminStatus();
+    checkAdminStatus();
   }, []);
 
   const isLoading = useAppLoading();
@@ -60,7 +58,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
       )} */}
 
-      <MacroSummary totals={dailyTotals} />
+      <MacroSummary />
 
       <View style={styles.mealsContainer}>
 
@@ -79,12 +77,7 @@ export default function HomeScreen() {
         {meals.length === 0 ? (
           <Text style={styles.emptyText}>No meals recorded for this date. Add a meal!</Text>
         ) : (
-          <FlatList
-            data={meals}
-            renderItem={({ item }) => <MealItem meal={item} />}
-            keyExtractor={(item) => item.id.toString()}
-            style={styles.mealsList}
-          />
+          <MealList />
         )}
       </View>
 
@@ -153,9 +146,6 @@ const styles = StyleSheet.create({
   },
   calendarButton: {
     padding: 4,
-  },
-  mealsList: {
-    flex: 1,
   },
   emptyText: {
     textAlign: 'center',

@@ -9,6 +9,7 @@ interface DateState {
   setSelectedDate: (date: string) => void;
   setMarkedDates: (dates: string[]) => void;
   addMarkedDate: (date: string) => void;
+  removeMarkedDate: (date: string) => void;
   setIsLoading: (loading: boolean) => void;
 }
 
@@ -30,6 +31,12 @@ export const useDateStore = create<DateState>((set, get) => ({
     if (!markedDates.includes(date)) {
       set({ markedDates: [...markedDates, date] });
     }
+  },
+
+  removeMarkedDate: (date) => {
+    const { markedDates } = get();
+    const updatedDates = markedDates.filter(d => d !== date);
+    set({ markedDates: updatedDates });
   },
   
   setIsLoading: (loading) => {

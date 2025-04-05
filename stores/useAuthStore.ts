@@ -5,17 +5,14 @@ import { supabase } from '../services/supabase';
 
 interface AuthState {
   session: Session | null;
-  // isAdmin: boolean;
   isLoading: boolean;
 
   initialize: () => void;
-  // setIsAdmin: (isAdmin: boolean) => void;
   signOut: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   session: null,
-  // isAdmin: false,
   isLoading: true,
 
   initialize: () => {
@@ -29,10 +26,6 @@ export const useAuthStore = create<AuthState>((set) => ({
       }
     );
   },
-
-  // setIsAdmin: (isAdmin) => {
-  //   set({ isAdmin: isAdmin });
-  // },
   
   signOut: async () => {
     try {

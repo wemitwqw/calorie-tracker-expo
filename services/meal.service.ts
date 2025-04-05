@@ -89,47 +89,28 @@ export const addMeal = async (meal: Omit<Meal, 'id' | 'user_id' | 'created_at'>)
   }
 };
 
-// export const updateMeal = async (id: string, updates: Partial<Meal>) => {
-//   const { updateMealInState, setIsLoading } = useMealStore.getState();
+export const deleteMeal = async (id: string) => {
+  const { meals, deleteMealFromState, setIsLoading } = useMealStore.getState();
+  const { removeMarkedDate } = useDateStore.getState();
   
-//   try {
-//     setIsLoading(true);
+  try {
+    setIsLoading(true);
     
-//     const { error } = await supabase
-//       .from('meals')
-//       .update(updates)
-//       .eq('id', id);
+    const { error } = await supabase
+      .from('meals')
+      .delete()
+      .eq('id', id);
 
-//     if (error) throw error;
+    if (error) throw error;
     
-//     updateMealInState(id, updates);
-//   } catch (error) {
-//     console.error('Error updating meal:', error);
-//   } finally {
-//     setIsLoading(false);
-//   }
-// };
+    if (meals.length === 1) {
+      removeMarkedDate(meals[0].date);
+    }
 
-// export const deleteMeal = async (id: string) => {
-//   const { deleteMealFromState, setIsLoading } = useMealStore.getState();
-  
-//   try {
-//     setIsLoading(true);
-    
-//     const { error } = await supabase
-//       .from('meals')
-//       .delete()
-//       .eq('id', id);
-
-//     if (error) throw error;
-    
-//     deleteMealFromState(id);
-    
-//     // Refresh meal dates to update calendar markers
-//     await fetchMealDates();
-//   } catch (error) {
-//     console.error('Error deleting meal:', error);
-//   } finally {
-//     setIsLoading(false);
-//   }
-// };
+    deleteMealFromState(id);
+  } catch (error) {
+    console.error('Error deleting meal:', error);
+  } finally {
+    setIsLoading(false);
+  }
+};
