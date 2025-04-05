@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Modal, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
-import { ROUTES } from '@/routes';
+import { ROUTES } from '@/constants';
 import { Ionicons } from '@expo/vector-icons';
 import MacroSummary from '@/components/MacroSummary';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -11,7 +11,7 @@ import { fetchMealDates, fetchMealsForDate } from '@/services/meal.service';
 import { useMealStore } from '@/stores/useMealStore';
 import { useDateStore } from '@/stores/useDateStore';
 import MealList from '@/components/MealList';
-import { checkAdminStatus } from '@/services/user.service';
+import Admin from '@/components/AdminAccess';
 
 function useAppLoading() {
   const mealLoading = useMealStore(state => state.isLoading);
@@ -33,7 +33,6 @@ export default function HomeScreen() {
   
   useEffect(() => {
     fetchMealDates();
-    checkAdminStatus();
   }, []);
 
   const isLoading = useAppLoading();
@@ -48,20 +47,9 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
 
-      {/* {isAdmin && (
-        <TouchableOpacity 
-          style={styles.adminButton} 
-          onPress={() => router.push(ROUTES.WHITELIST)}
-        >
-          <Ionicons name="shield-outline" size={20} color="white" />
-          <Text style={styles.adminButtonText}>Admin Panel</Text>
-        </TouchableOpacity>
-      )} */}
-
       <MacroSummary />
 
       <View style={styles.mealsContainer}>
-
         <View style={styles.dateSelector}>
           <Text style={styles.sectionTitle}>
             {formatDate(selectedDate)}
@@ -80,6 +68,16 @@ export default function HomeScreen() {
           <MealList />
         )}
       </View>
+
+      <Admin>
+        <TouchableOpacity 
+          style={styles.adminButton} 
+          onPress={() => router.push(ROUTES.WHITELIST)}
+        >
+          <Ionicons name="shield-outline" size={20} color="white" />
+          <Text style={styles.adminButtonText}>Admin Panel</Text>
+        </TouchableOpacity>
+      </Admin>
 
       <TouchableOpacity 
         style={styles.addButton} 
@@ -101,10 +99,6 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
   adminButton: {
     position: 'absolute',
     bottom: 80,
@@ -120,6 +114,10 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: '600',
     marginLeft: 5,
+  },
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
   },
   centered: {
     flex: 1,
