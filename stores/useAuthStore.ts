@@ -22,23 +22,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const { data } = await supabase.auth.getSession();
       set({ session: data.session, isLoading: false });
 
-      // if (data.session) {
-      //   setTimeout(async () => {
-      //     await get().checkIsAdmin();
-      //   }, 100);
-      // }
+      if (data.session) {
+        setTimeout(async () => {
+          await get().checkIsAdmin();
+        }, 100);
+      }
       
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         async (_event, session) => {
           set({ session });
-          
-          if (session) {
-            setTimeout(async () => {
-              await get().checkIsAdmin();
-            }, 100);
-          } else {
-            set({ isAdmin: false });
-          }
         }
       );
 
