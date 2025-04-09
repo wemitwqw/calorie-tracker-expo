@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '../services/supabase';
@@ -22,27 +21,32 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const { data } = await supabase.auth.getSession();
       set({ session: data.session, isLoading: false });
-      
-      // if (data.session) {
-      //   get().checkIsAdmin();
-      // }
 
+      // if (data.session) {
+      //   setTimeout(async () => {
+      //     await get().checkIsAdmin();
+      //   }, 100);
+      // }
+      
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         async (_event, session) => {
           set({ session });
           
           if (session) {
-            await get().checkIsAdmin();
+            setTimeout(async () => {
+              await get().checkIsAdmin();
+            }, 100);
           } else {
             set({ isAdmin: false });
           }
         }
       );
 
-      return { session: data.session };
+      return subscription;
     } catch (error) {
       console.error('Error initializing auth:', error);
       set({ isLoading: false });
+      return null;
     }
   },
 

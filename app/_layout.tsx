@@ -1,24 +1,25 @@
 import { Slot } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '../stores/useAuthStore';
-import { supabase } from '@/services/supabase';
 
 export default function RootLayout() {
   const initialize = useAuthStore(state => state.initialize);
   const [isInitialized, setIsInitialized] = useState(false);
-  
+
   useEffect(() => {
+    let subscription: any = null;
+    
     const initAuth = async () => {
-      initialize();
+      subscription = initialize();
       setIsInitialized(true);
     };
-    
+
     initAuth();
-    
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {});
-    
+
     return () => {
-      subscription.unsubscribe();
+      if (subscription) {
+        subscription.unsubscribe();
+      }
     };
   }, [initialize]);
 
