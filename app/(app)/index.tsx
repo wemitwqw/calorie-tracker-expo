@@ -69,26 +69,29 @@ export default function HomeScreen() {
         )}
       </View>
 
-      <Admin>
-        <TouchableOpacity 
-          style={styles.adminButton} 
-          onPress={() => router.push(ROUTES.WHITELIST)}
-        >
-          <Ionicons name="shield-outline" size={20} color="white" />
-          <Text style={styles.adminButtonText}>Admin Panel</Text>
+      <View style={styles.footerContainer}>
+        <View style={styles.buttonContainer}>
+          <Admin>
+            <TouchableOpacity 
+              style={styles.adminButton} 
+              onPress={() => router.push(ROUTES.WHITELIST)}
+            >
+              <Ionicons name="shield-outline" size={20} color="white" />
+            </TouchableOpacity>
+          </Admin>
+
+          <TouchableOpacity 
+            style={styles.addButton} 
+            onPress={() => router.push(ROUTES.ADD_MEAL)}
+          >
+            <Ionicons name="add" size={30} color="white" />
+          </TouchableOpacity>
+        </View>
+        
+        <TouchableOpacity style={styles.signOutButton} onPress={signOut}>
+          <Text style={styles.signOutText}>Sign Out</Text>
         </TouchableOpacity>
-      </Admin>
-
-      <TouchableOpacity 
-        style={styles.addButton} 
-        onPress={() => router.push(ROUTES.ADD_MEAL)}
-      >
-        <Ionicons name="add" size={30} color="white" />
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.signOutButton} onPress={signOut}>
-        <Text style={styles.signOutText}>Sign Out</Text>
-      </TouchableOpacity>
+      </View>
 
       <CustomCalendar 
         calendarVisible={calendarVisible} 
@@ -99,22 +102,6 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  adminButton: {
-    position: 'absolute',
-    bottom: 80,
-    left: 20,
-    backgroundColor: '#4361EE',
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    borderRadius: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  adminButtonText: {
-    color: 'white',
-    fontWeight: '600',
-    marginLeft: 5,
-  },
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
@@ -124,13 +111,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-  },
-  mealsContainer: {
-    flex: 1,
-    backgroundColor: 'white',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 16,
   },
   dateSelector: {
     flexDirection: 'row',
@@ -150,10 +130,43 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 20,
   },
+  mealsContainer: {
+    flex: 1,
+    backgroundColor: 'white',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 16,
+  },
+  footerContainer: {
+    backgroundColor: '#f5f5f5',
+    flexDirection: 'column',
+    paddingVertical: 10,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    marginBottom: 10,
+  },
+  adminButton: {
+    backgroundColor: '#4361EE',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  adminButtonText: {
+    color: 'white',
+    fontWeight: '600',
+    marginLeft: 5,
+  },
   addButton: {
-    position: 'absolute',
-    right: 20,
-    bottom: 80,
     backgroundColor: '#4CAF50',
     width: 60,
     height: 60,
@@ -167,7 +180,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   signOutButton: {
-    padding: 16,
+    padding: 10,
     alignItems: 'center',
   },
   signOutText: {
