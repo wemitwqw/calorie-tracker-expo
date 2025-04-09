@@ -14,6 +14,7 @@ import { useMealStore } from '@/stores/useMealStore';
 import { addMeal } from '@/services/meal.service';
 import { useDateStore } from '@/stores/useDateStore';
 import { router } from 'expo-router';
+import { ROUTES } from '@/constants';
 
 export default function AddMealScreen() {
   const [name, setName] = useState('');
@@ -45,23 +46,23 @@ export default function AddMealScreen() {
     return true;
   };
 
-  async function handleAddMeal() {
+  async function handleSubmit() {
     if (validateForm()) {
       try {
         addMeal(
           {
-            name,
+            name: name,
             calories: parseFloat(calories) || 0,
             protein: parseFloat(protein) || 0,
             carbs: parseFloat(carbs) || 0,
             fat: parseFloat(fat) || 0,
             date: selectedDate,
-          },
+          }
         );
-        
-        router.back();
+
+        router.replace(ROUTES.HOME);
       } catch (error) {
-        console.error('Error adding meal:', error);
+        console.log('Failed to add meal. Please try again. ', error);
       }
     }
   }
@@ -79,7 +80,7 @@ export default function AddMealScreen() {
             style={styles.input}
             value={name}
             onChangeText={setName}
-            placeholder="e.g., Breakfast, Lunch, Snack"
+            placeholder='e.g., Breakfast, Lunch, Snack'
           />
 
           <Text style={styles.label}>Calories</Text>
@@ -87,8 +88,8 @@ export default function AddMealScreen() {
             style={styles.input}
             value={calories}
             onChangeText={setCalories}
-            placeholder="e.g., 500"
-            keyboardType="numeric"
+            placeholder='e.g., 500'
+            keyboardType='decimal-pad'
           />
 
           <Text style={styles.label}>Protein (g)</Text>
@@ -96,8 +97,8 @@ export default function AddMealScreen() {
             style={styles.input}
             value={protein}
             onChangeText={setProtein}
-            placeholder="e.g., 30"
-            keyboardType="numeric"
+            placeholder='e.g., 30'
+            keyboardType='decimal-pad'
           />
 
           <Text style={styles.label}>Carbs (g)</Text>
@@ -105,8 +106,8 @@ export default function AddMealScreen() {
             style={styles.input}
             value={carbs}
             onChangeText={setCarbs}
-            placeholder="e.g., 50"
-            keyboardType="numeric"
+            placeholder='e.g., 50'
+            keyboardType='decimal-pad'
           />
 
           <Text style={styles.label}>Fat (g)</Text>
@@ -114,13 +115,13 @@ export default function AddMealScreen() {
             style={styles.input}
             value={fat}
             onChangeText={setFat}
-            placeholder="e.g., 15"
-            keyboardType="numeric"
+            placeholder='e.g., 15'
+            keyboardType='decimal-pad'
           />
 
           <TouchableOpacity 
             style={styles.button} 
-            onPress={handleAddMeal}
+            onPress={handleSubmit}
             disabled={loading}
           >
             <Text style={styles.buttonText}>

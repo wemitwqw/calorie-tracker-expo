@@ -46,7 +46,7 @@ export const fetchMealsForDate = async (selectedDate: string) => {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    
+
     setMeals(data || []);
   } catch (error) {
     console.error('Error fetching meals:', error);
@@ -61,7 +61,7 @@ export const addMeal = async (meal: Omit<Meal, 'id' | 'user_id' | 'created_at'>)
   
   try {
     setIsLoading(true);
-    
+
     const userId = useAuthStore.getState().session?.user.id;
     if (!userId) return;
 
@@ -80,7 +80,7 @@ export const addMeal = async (meal: Omit<Meal, 'id' | 'user_id' | 'created_at'>)
     if (data && data.length > 0) {
       addMealToState(data[0]);
     }
-    
+
     addMarkedDate(meal.date);
   } catch (error) {
     console.error('Error adding meal:', error);
@@ -95,7 +95,7 @@ export const deleteMeal = async (id: string) => {
   
   try {
     setIsLoading(true);
-    
+
     const { error } = await supabase
       .from('meals')
       .delete()
