@@ -38,4 +38,4 @@ jobs:
       
       - name: Deploy to VPS
         run: |
-          rsync -avz --delete ./dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/www/wwwroot/track.vladislav.ee/
+          rsync -avz --delete --exclude='.htaccess' --exclude='.user.ini' --exclude='.*' --no-perms --no-owner --no-group ./dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/www/wwwroot/track.vladislav.ee/
