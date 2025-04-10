@@ -16,12 +16,11 @@ import Admin from '@/components/AdminAccess';
 function useAppLoading() {
   const mealLoading = useMealStore(state => state.isLoading);
   const dateLoading = useDateStore(state => state.isLoading);
-  
+
   return mealLoading || dateLoading;
 }
 
 export default function HomeScreen() {
-  const signOut = useAuthStore(state => state.signOut);
   const selectedDate = useDateStore(state => state.selectedDate);
   const meals = useMealStore(state => state.meals);
 
@@ -87,10 +86,6 @@ export default function HomeScreen() {
             <Ionicons name="add" size={30} color="white" />
           </TouchableOpacity>
         </View>
-        
-        <TouchableOpacity style={styles.signOutButton} onPress={signOut}>
-          <Text style={styles.signOutText}>Sign Out</Text>
-        </TouchableOpacity>
       </View>
 
       <CustomCalendar 
@@ -104,7 +99,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#D6EFD8',
   },
   centered: {
     flex: 1,
@@ -136,9 +131,9 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 16,
+    marginHorizontal: 16,
   },
   footerContainer: {
-    backgroundColor: '#f5f5f5',
     flexDirection: 'column',
     paddingVertical: 10,
   },
@@ -149,7 +144,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   adminButton: {
-    backgroundColor: '#4361EE',
+    backgroundColor: '#1A5319',
     width: 60,
     height: 60,
     borderRadius: 30,
@@ -167,7 +162,7 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
   addButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#1A5319',
     width: 60,
     height: 60,
     borderRadius: 30,
@@ -178,13 +173,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 3,
     elevation: 5,
-  },
-  signOutButton: {
-    padding: 10,
-    alignItems: 'center',
-  },
-  signOutText: {
-    color: '#f44336',
-    fontWeight: '500',
   },
 });

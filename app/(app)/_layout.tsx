@@ -3,11 +3,14 @@ import { useAuthStore } from '../../stores/useAuthStore';
 import { useEffect } from 'react';
 import { router } from 'expo-router';
 import { ROUTES } from '@/constants';
-import { ActivityIndicator, View, StyleSheet } from 'react-native';
+import { ActivityIndicator, View, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function AppLayout() {
   const session = useAuthStore(state => state.session);
   const isLoading = useAuthStore(state => state.isLoading);
+
+  const signOut = useAuthStore(state => state.signOut);
 
   useEffect(() => {
     if (!isLoading && !session) {
@@ -29,12 +32,20 @@ export default function AppLayout() {
 
   return (
     <Stack screenOptions={{
-      headerShown: false,
+      headerShown: true,
     }}>
       <Stack.Screen
         name="index"
         options={{
-          title: 'Nutrition Tracker',
+          title: '',
+          headerRight: () => (
+            <TouchableOpacity 
+              style={styles.signOutButton} 
+              onPress={signOut}
+            >
+              <Ionicons name="exit-outline" size={28} color="red"/>
+            </TouchableOpacity>
+          ),
         }}
       />
       <Stack.Screen
@@ -47,7 +58,7 @@ export default function AppLayout() {
       <Stack.Screen
         name="admin/whitelist"
         options={{
-          title: 'Account Whitelist',
+          title: 'Whitelisted Emails',
           presentation: 'modal',
         }}
       />
@@ -61,5 +72,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+  },
+  signOutButton: {
+    padding: 10,
+    alignItems: 'center',
+  },
+  signOutText: {
+    color: '#f44336',
+    fontWeight: '500',
   },
 });

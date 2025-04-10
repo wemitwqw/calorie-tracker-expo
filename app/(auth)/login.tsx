@@ -3,8 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Alert, Platform, ActivityIndi
 import { supabase } from '../../services/supabase';
 import { Ionicons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
-import * as Linking from 'expo-linking';
-import { ROUTES } from '@/constants';
+import { handleDiscordSignIn, handleGoogleSignIn } from '@/services/auth.service';
 
 if (Platform.OS !== 'web') {
   WebBrowser.maybeCompleteAuthSession();
@@ -13,74 +12,10 @@ if (Platform.OS !== 'web') {
 export default function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
-  const redirectUri = Linking.createURL(ROUTES.CALLBACK);
 
   useEffect(() => {
     setIsInitialized(true);
   }, []);
-
-  async function signInWithGoogleWeb() {
-    setIsLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.origin,
-        },
-      });
-      
-      if (error) throw error;
-    } catch (error: any) {
-      console.error('Error signing in with Google:', error);
-      Alert.alert('Error', error.message || 'Failed to sign in with Google');
-      setIsLoading(false);
-    }
-  }
-
-  async function signInWithGoogleMobile() {
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: redirectUri,
-          skipBrowserRedirect: true,
-        },
-      });
-      
-      if (error) throw error;
-      if (!data?.url) throw new Error('No OAuth URL returned');
-      
-      const result = await WebBrowser.openAuthSessionAsync(
-        data.url,
-        redirectUri
-      );
-      
-      if (result.type === 'success') {
-        const url = new URL(result.url);
-        const code = url.searchParams.get('code');
-        
-        if (code) {
-          const { error: sessionError } = await supabase.auth.exchangeCodeForSession(code);
-          if (sessionError) throw sessionError;
-        }
-      } else if (result.type === 'cancel') {
-        setIsLoading(false);
-      }
-    } catch (error: any) {
-      console.error('Error in OAuth flow:', error);
-      Alert.alert('Error', error.message || 'Authentication failed');
-      setIsLoading(false);
-    }
-  }
-
-  function handleGoogleSignIn() {
-    if (Platform.OS === 'web') {
-      signInWithGoogleWeb();
-    } else {
-      signInWithGoogleMobile();
-    }
-  }
 
   if (!isInitialized || isLoading) {
     return (
@@ -101,12 +36,23 @@ export default function LoginScreen() {
       <View style={styles.buttonsContainer}>
         <TouchableOpacity 
           style={styles.googleButton} 
-          onPress={handleGoogleSignIn}
+          onPress={() => handleGoogleSignIn({ setIsLoading })}
           disabled={isLoading}
         >
           <Ionicons name="logo-google" size={24} color="white" style={styles.buttonIcon} />
           <Text style={styles.buttonText}>
             {isLoading ? 'Signing in...' : 'Continue with Google'}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.discordButton} 
+          onPress={() => handleDiscordSignIn({ setIsLoading })}
+          disabled={isLoading}
+        >
+          <Ionicons name="logo-discord" size={24} color="white" style={styles.buttonIcon} />
+          <Text style={styles.buttonText}>
+            {isLoading ? 'Signing in...' : 'Continue with Discord'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -145,8 +91,18 @@ const styles = StyleSheet.create({
   buttonsContainer: {
     width: '100%',
     marginVertical: 24,
+    gap: 16,
   },
   googleButton: {
+    flexDirection: 'row',
+    width: '100%',
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#4285F4',
+  },
+  discordButton: {
     flexDirection: 'row',
     width: '100%',
     padding: 16,

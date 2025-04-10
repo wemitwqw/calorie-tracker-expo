@@ -117,7 +117,6 @@ export default function WhitelistScreen() {
         <Text style={styles.title}>
           Welcome, {session?.user?.email}
         </Text>
-        <Text style={styles.title}>Whitelisted Emails</Text>
         <TouchableOpacity 
           style={styles.refreshButton}
           onPress={fetchEmails}
