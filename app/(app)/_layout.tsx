@@ -1,22 +1,20 @@
-import { Stack } from 'expo-router';
-import { useAuthStore } from '../../stores/useAuthStore';
-import { useEffect } from 'react';
-import { router } from 'expo-router';
-import { ROUTES } from '@/constants';
-import { ActivityIndicator, View, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, ActivityIndicator, StyleSheet, TouchableOpacity } from 'react-native';
+import { Stack, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuthStore } from '@/stores/useAuthStore';
+import { ROUTES } from '@/constants';
 
 export default function AppLayout() {
   const session = useAuthStore(state => state.session);
   const isLoading = useAuthStore(state => state.isLoading);
-
   const signOut = useAuthStore(state => state.signOut);
 
   useEffect(() => {
     if (!isLoading && !session) {
       router.replace(ROUTES.LOGIN);
     }
-  }, [session, isLoading, router]);
+  }, [session, isLoading]);
 
   if (isLoading) {
     return (
@@ -37,14 +35,22 @@ export default function AppLayout() {
       <Stack.Screen
         name="index"
         options={{
-          title: '',
+          title: 'Meal Tracker',
           headerRight: () => (
-            <TouchableOpacity 
-              style={styles.signOutButton} 
-              onPress={signOut}
-            >
-              <Ionicons name="exit-outline" size={28} color="red"/>
-            </TouchableOpacity>
+            <View style={styles.headerButtons}>
+              <TouchableOpacity 
+                style={styles.headerButton}
+                onPress={() => router.push(ROUTES.PRODUCTS)}
+              >
+                <Ionicons name="nutrition-outline" size={24} color="#4CAF50" />
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.headerButton}
+                onPress={signOut}
+              >
+                <Ionicons name="exit-outline" size={24} color="red" />
+              </TouchableOpacity>
+            </View>
           ),
         }}
       />
@@ -62,6 +68,24 @@ export default function AppLayout() {
           presentation: 'modal',
         }}
       />
+      <Stack.Screen
+        name="products/index"
+        options={{
+          title: 'Products',
+        }}
+      />
+      <Stack.Screen
+        name="products/add"
+        options={{
+          title: 'Add Product',
+        }}
+      />
+      <Stack.Screen
+        name="products/edit"
+        options={{
+          title: 'Edit Product',
+        }}
+      />
     </Stack>
   );
 }
@@ -71,14 +95,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
   },
-  signOutButton: {
-    padding: 10,
+  headerButtons: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  signOutText: {
-    color: '#f44336',
-    fontWeight: '500',
+  headerButton: {
+    marginRight: 15,
+    padding: 3,
   },
 });
