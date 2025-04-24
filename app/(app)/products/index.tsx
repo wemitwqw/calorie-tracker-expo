@@ -45,8 +45,8 @@ export default function ProductsScreen() {
       <View style={styles.productInfo}>
         <Text style={styles.productName}>{item.name}</Text>
         <Text style={styles.productMacros}>
-          {item.calories} cal | {item.protein}p | {item.carbs}c | {item.fat}f
-          per {item.serving_size}{item.serving_unit}
+          {item.calories} cal | {item.protein}g prot | {item.carbs}g carbs | {item.fat}g fat | {item.fiber}g fiber
+          - per {item.serving_size}{item.serving_unit}
         </Text>
       </View>
       <View style={styles.productActions}>

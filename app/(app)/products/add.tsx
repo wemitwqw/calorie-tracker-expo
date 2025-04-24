@@ -20,6 +20,7 @@ export default function AddProductScreen() {
   const [protein, setProtein] = useState('');
   const [carbs, setCarbs] = useState('');
   const [fat, setFat] = useState('');
+  const [fiber, setFiber] = useState('');
   const [servingSize, setServingSize] = useState('100');
   const [servingUnit, setServingUnit] = useState('g');
 
@@ -52,6 +53,7 @@ export default function AddProductScreen() {
           protein: parseFloat(protein) || 0,
           carbs: parseFloat(carbs) || 0,
           fat: parseFloat(fat) || 0,
+          fiber: parseFloat(fiber) || 0,
           serving_size: parseFloat(servingSize) || 100,
           serving_unit: servingUnit || 'g',
         });
@@ -111,6 +113,15 @@ export default function AddProductScreen() {
             style={styles.input}
             value={fat}
             onChangeText={setFat}
+            placeholder='e.g., 3.6'
+            keyboardType='decimal-pad'
+          />
+
+          <Text style={styles.label}>Fiber (g)</Text>
+          <TextInput
+            style={styles.input}
+            value={fiber}
+            onChangeText={setFiber}
             placeholder='e.g., 3.6'
             keyboardType='decimal-pad'
           />

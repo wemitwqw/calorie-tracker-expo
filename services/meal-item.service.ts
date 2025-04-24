@@ -82,6 +82,7 @@ export const calculateMacrosFromProduct = (product: any, amount: number) => {
     calories: product.calories * ratio,
     protein: product.protein * ratio,
     carbs: product.carbs * ratio,
-    fat: product.fat * ratio
+    fat: product.fat * ratio,
+    fiber: product.fiber * ratio,
   };
 };

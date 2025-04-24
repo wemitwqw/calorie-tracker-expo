@@ -16,7 +16,7 @@ interface MealState {
 
 export const useMealStore = create<MealState>((set, get) => ({
     meals: [],
-    dailyTotals: { calories: 0, protein: 0, carbs: 0, fat: 0 },
+    dailyTotals: { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 },
     isLoading: false,
 
     setIsLoading: (loading) => {
@@ -36,8 +36,9 @@ export const useMealStore = create<MealState>((set, get) => ({
             acc.protein += meal.protein || 0;
             acc.carbs += meal.carbs || 0;
             acc.fat += meal.fat || 0;
+            acc.fiber += meal.fiber || 0;
             return acc;
-        }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
+        }, { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 });
         
         set({ dailyTotals: totals });
     },

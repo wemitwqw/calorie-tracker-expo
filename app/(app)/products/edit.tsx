@@ -26,6 +26,7 @@ export default function EditProductScreen() {
   const [protein, setProtein] = useState('');
   const [carbs, setCarbs] = useState('');
   const [fat, setFat] = useState('');
+  const [fiber, setFiber] = useState('');
   const [servingSize, setServingSize] = useState('');
   const [servingUnit, setServingUnit] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -39,6 +40,7 @@ export default function EditProductScreen() {
         setProtein(product.protein.toString());
         setCarbs(product.carbs.toString());
         setFat(product.fat.toString());
+        setFiber(product.fiber.toString());
         setServingSize(product.serving_size.toString());
         setServingUnit(product.serving_unit);
       }
@@ -73,6 +75,7 @@ export default function EditProductScreen() {
           protein: parseFloat(protein) || 0,
           carbs: parseFloat(carbs) || 0,
           fat: parseFloat(fat) || 0,
+          fiber: parseFloat(fiber) || 0,
           serving_size: parseFloat(servingSize) || 100,
           serving_unit: servingUnit || 'g',
         });
@@ -140,6 +143,15 @@ export default function EditProductScreen() {
             style={styles.input}
             value={fat}
             onChangeText={setFat}
+            placeholder='e.g., 3.6'
+            keyboardType='decimal-pad'
+          />
+
+          <Text style={styles.label}>Fiber (g)</Text>
+          <TextInput
+            style={styles.input}
+            value={fiber}
+            onChangeText={setFiber}
             placeholder='e.g., 3.6'
             keyboardType='decimal-pad'
           />

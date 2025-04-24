@@ -6,6 +6,7 @@ export interface Product {
     protein: number;
     carbs: number;
     fat: number;
+    fiber: number;
     serving_size: number;
     serving_unit: string;
     created_at: string;

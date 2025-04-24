@@ -34,6 +34,7 @@ export default function AddMealScreen() {
   const [protein, setProtein] = useState('0');
   const [carbs, setCarbs] = useState('0');
   const [fat, setFat] = useState('0');
+  const [fiber, setFiber] = useState('0');
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
@@ -57,6 +58,7 @@ export default function AddMealScreen() {
       let totalProtein = 0;
       let totalCarbs = 0;
       let totalFat = 0;
+      let totalFiber = 0;
 
       selectedProducts.forEach(item => {
         const macros = calculateMacrosFromProduct(item.product, item.amount);
@@ -64,12 +66,14 @@ export default function AddMealScreen() {
         totalProtein += macros.protein;
         totalCarbs += macros.carbs;
         totalFat += macros.fat;
+        totalFiber += macros.fiber;
       });
 
       setCalories(totalCalories.toFixed(1));
       setProtein(totalProtein.toFixed(1));
       setCarbs(totalCarbs.toFixed(1));
       setFat(totalFat.toFixed(1));
+      setFiber(totalFiber.toFixed(1));
     }
   }, [selectedProducts]);
 
@@ -136,6 +140,7 @@ export default function AddMealScreen() {
           protein: parseFloat(protein) || 0,
           carbs: parseFloat(carbs) || 0,
           fat: parseFloat(fat) || 0,
+          fiber: parseFloat(fiber) || 0,
           date: selectedDate,
         });
         
@@ -154,7 +159,7 @@ export default function AddMealScreen() {
       <View>
         <Text style={styles.productName}>{item.name}</Text>
         <Text style={styles.productMacros}>
-          {item.calories} cal | {item.protein}p | {item.carbs}c | {item.fat}f
+          {item.calories} cal | {item.protein}p | {item.carbs}c | {item.fat}fat | {item.fiber}f
           per {item.serving_size}{item.serving_unit}
         </Text>
       </View>
@@ -173,7 +178,7 @@ export default function AddMealScreen() {
           </Text>
           <Text style={styles.selectedProductMacros}>
             {macros.calories.toFixed(1)} cal | {macros.protein.toFixed(1)}p | 
-            {macros.carbs.toFixed(1)}c | {macros.fat.toFixed(1)}f
+            {macros.carbs.toFixed(1)}c | {macros.fat.toFixed(1)}fat | {macros.fiber.toFixed(1)}f
           </Text>
         </View>
         <TouchableOpacity
@@ -266,6 +271,15 @@ export default function AddMealScreen() {
             keyboardType='decimal-pad'
           />
 
+          <Text style={styles.label}>Fiber (g)</Text>
+          <TextInput
+            style={styles.input}
+            value={fiber}
+            onChangeText={setFiber}
+            placeholder='e.g., 15'
+            keyboardType='decimal-pad'
+          />
+
           <TouchableOpacity 
             style={styles.submitButton} 
             onPress={handleSubmit}
@@ -278,7 +292,6 @@ export default function AddMealScreen() {
         </View>
       </ScrollView>
 
-      {/* Product Selection Modal */}
       <Modal
         visible={isModalVisible}
         animationType="slide"

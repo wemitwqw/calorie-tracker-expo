@@ -23,6 +23,10 @@ export default function MacroSummary() {
           <Text style={styles.macroValue}>{dailyTotals.fat}g</Text>
           <Text style={styles.macroLabel}>Fat</Text>
         </View>
+        <View style={styles.macroBox}>
+          <Text style={styles.macroValue}>{dailyTotals.fiber}g</Text>
+          <Text style={styles.macroLabel}>Fiber</Text>
+        </View>
       </View>
     </View>
   );
