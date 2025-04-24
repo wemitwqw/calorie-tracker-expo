@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, Platform, ActivityIndicator } from 'react-native';
-import { supabase } from '../../services/supabase';
+import { supabase } from '../../config/supabase';
 import { Ionicons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
 import { handleDiscordSignIn, handleGoogleSignIn } from '@/services/auth.service';

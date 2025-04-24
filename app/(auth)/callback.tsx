@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Text, View, ActivityIndicator, StyleSheet } from 'react-native';
-import { supabase } from '../../services/supabase';
+import { supabase } from '../../config/supabase';
 import { useLocalSearchParams } from 'expo-router';
 
 export default function AuthCallback() {

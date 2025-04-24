@@ -1,4 +1,4 @@
-import { supabase } from '@/services/supabase';
+import { supabase } from '@/config/supabase';
 import { useDateStore } from '@/stores/useDateStore';
 import { useMealStore } from '../stores/useMealStore';
 import { useAuthStore } from '@/stores/useAuthStore';

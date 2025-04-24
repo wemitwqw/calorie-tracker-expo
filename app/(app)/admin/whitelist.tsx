@@ -11,16 +11,14 @@ import {
   KeyboardAvoidingView,
   Platform
 } from 'react-native';
-import { supabase } from '../../../services/supabase';
 import { Ionicons } from '@expo/vector-icons';
 import { useAdminProtection } from '@/hooks/useAdminProtection';
-
-type WhitelistEntry = {
-  email: string;
-  added_at: string;
-  added_by: string | null;
-  notes: string | null;
-};
+import { 
+  fetchWhitelistedEmails, 
+  addEmailToWhitelist, 
+  removeEmailFromWhitelist,
+} from '@/services/admin.service';
+import { WhitelistEntry } from '@/types/admin';
 
 export default function WhitelistScreen() {
   const [emails, setEmails] = useState<WhitelistEntry[]>([]);
@@ -38,65 +36,40 @@ export default function WhitelistScreen() {
   async function fetchEmails() {
     setRefreshing(true);
     try {
-      const { data, error } = await supabase
-        .from('allowed_emails')
-        .select('*')
-        .order('added_at', { ascending: false });
-        
-      if (error) throw error;
-      setEmails(data || []);
+      const data = await fetchWhitelistedEmails();
+      setEmails(data);
     } catch (error) {
-      console.error('Error fetching emails:', error);
       Alert.alert('Error', 'Failed to fetch whitelisted emails');
     } finally {
       setRefreshing(false);
     }
   }
 
-  async function addEmail() {
-    if (!newEmail || !newEmail.includes('@')) {
-      Alert.alert('Error', 'Please enter a valid email address');
+  async function handleAddEmail() {
+    if (!newEmail) {
+      Alert.alert('Error', 'Please enter an email address');
       return;
     }
     
     setAddingEmail(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      const { error } = await supabase
-        .from('allowed_emails')
-        .insert([{ 
-          email: newEmail.toLowerCase().trim(),
-          added_by: user?.id,
-          notes: notes.trim() || null
-        }]);
-        
-      if (error) throw error;
-      
+      await addEmailToWhitelist(newEmail, notes);
       setNewEmail('');
       setNotes('');
       fetchEmails();
-      Alert.alert('Success', 'Email added to whitelist');
     } catch (error: any) {
-      console.error('Error adding email:', error);
       Alert.alert('Error', error.message || 'Failed to add email to whitelist');
     } finally {
       setAddingEmail(false);
     }
   }
 
-  async function removeEmail(email: string) {
+  async function handleRemoveEmail(email: string) {
     try {
-      const { error } = await supabase
-        .from('allowed_emails')
-        .delete()
-        .eq('email', email);
-        
-      if (error) throw error;
-      
+      await removeEmailFromWhitelist(email);
       fetchEmails();
     } catch (error: any) {
-      console.error('Error removing email:', error);
+      Alert.alert('Error', 'Failed to remove email from whitelist');
     }
   }
 
@@ -144,7 +117,7 @@ export default function WhitelistScreen() {
         />
         <TouchableOpacity 
           style={styles.addButton}
-          onPress={addEmail}
+          onPress={handleAddEmail}
           disabled={addingEmail || !newEmail}
         >
           <Text style={styles.addButtonText}>
@@ -173,7 +146,7 @@ export default function WhitelistScreen() {
             </View>
             <TouchableOpacity 
               style={styles.deleteButton}
-              onPress={() => removeEmail(item.email)}
+              onPress={() => handleRemoveEmail(item.email)}
             >
               <Ionicons name="trash-outline" size={20} color="#FF3B30" />
             </TouchableOpacity>

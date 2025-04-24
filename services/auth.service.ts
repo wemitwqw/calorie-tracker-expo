@@ -1,5 +1,5 @@
 import { ROUTES } from '@/constants';
-import { supabase } from '@/services/supabase';
+import { supabase } from '@/config/supabase';
 import * as Linking from 'expo-linking';
 import { Alert, Platform } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';

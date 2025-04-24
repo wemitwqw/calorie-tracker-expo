@@ -1,4 +1,4 @@
-import { supabase } from '@/services/supabase';
+import { supabase } from '@/config/supabase';
 import { MealItem } from '@/types/meal-item';
 
 export const fetchMealItems = async (mealId: string) => {
