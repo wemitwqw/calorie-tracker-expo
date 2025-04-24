@@ -1,4 +1,4 @@
-name: Deploy Expo Web to VPS
+name: Deploy n&27b-X<# to VPS
 
 on:
   push:
@@ -27,7 +27,7 @@ jobs:
           echo "EXPO_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}" > .env
           echo "EXPO_PUBLIC_SUPABASE_URL=${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}" >> .env
       
-      - name: Build Expo Web
+      - name: Build n&27b-X<#
         run: npx expo export --platform web
       
       - name: Install SSH Key
@@ -46,4 +46,4 @@ jobs:
             --no-perms \
             --no-owner \
             --no-group \
-            ./dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/www/wwwroot/track.vladislav.ee/
+            ./dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:{{ secrets.VPS_PROJECT_FOLDER }}
