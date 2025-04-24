@@ -29,8 +29,8 @@ export default function LoginScreen() {
     <View style={styles.container}>
       <View style={styles.logoContainer}>
         <Ionicons name="nutrition-outline" size={64} color="#4CAF50" />
-        <Text style={styles.title}>Nutrition Tracker</Text>
-        <Text style={styles.subtitle}>Sign in to track your nutrition</Text>
+        <Text style={styles.title}>n&27b-X&lt;#</Text>
+        <Text style={styles.subtitle}>Sign in to track your calories</Text>
       </View>
       
       <View style={styles.buttonsContainer}>
