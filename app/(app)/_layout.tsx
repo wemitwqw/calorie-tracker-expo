@@ -35,7 +35,7 @@ export default function AppLayout() {
       <Stack.Screen
         name="index"
         options={{
-          title: 'Meal Tracker',
+          title: '',
           headerRight: () => (
             <View style={styles.headerButtons}>
               <TouchableOpacity 
