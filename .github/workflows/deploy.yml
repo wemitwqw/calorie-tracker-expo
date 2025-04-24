@@ -46,4 +46,4 @@ jobs:
             --no-perms \
             --no-owner \
             --no-group \
-            ./dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:{{ secrets.VPS_PROJECT_FOLDER }}
+            ./dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.VPS_PROJECT_FOLDER }}
