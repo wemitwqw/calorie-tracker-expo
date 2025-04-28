@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { DailyTotals } from '../types/meal';
 import { useMealStore } from '@/stores/useMealStore';
 
 export default function MacroSummary() {
@@ -9,18 +8,18 @@ export default function MacroSummary() {
   return (
     <View style={styles.container}>
       <Text style={styles.todayText}>Macros</Text>
-      <Text style={styles.caloriesText}>{dailyTotals.calories} calories</Text>
+      <Text style={styles.caloriesText}>{dailyTotals.calories.toFixed(2)} calories</Text>
       <View style={styles.macroRow}>
         <View style={styles.macroBox}>
-          <Text style={styles.macroValue}>{dailyTotals.protein}g</Text>
+          <Text style={styles.macroValue}>{dailyTotals.protein.toFixed(2)}g</Text>
           <Text style={styles.macroLabel}>Protein</Text>
         </View>
         <View style={styles.macroBox}>
-          <Text style={styles.macroValue}>{dailyTotals.carbs}g</Text>
+          <Text style={styles.macroValue}>{dailyTotals.carbs.toFixed(2)}g</Text>
           <Text style={styles.macroLabel}>Carbs</Text>
         </View>
         <View style={styles.macroBox}>
-          <Text style={styles.macroValue}>{dailyTotals.fat}g</Text>
+          <Text style={styles.macroValue}>{dailyTotals.fat.toFixed(2)}g</Text>
           <Text style={styles.macroLabel}>Fat</Text>
         </View>
       </View>
