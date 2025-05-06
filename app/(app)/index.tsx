@@ -138,8 +138,10 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   buttonContainer: {
+    display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
+    gap: 20,
     paddingHorizontal: 20,
     marginBottom: 10,
   },
